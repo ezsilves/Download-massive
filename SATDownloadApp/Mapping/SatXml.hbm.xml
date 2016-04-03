@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+    namespace="SATDownloadApp.Model" assembly="SATDownloadApp">
+
+  <class name="SatXml">
+ 
+    <id name="Id">
+      <generator class="guid.comb" />
+    </id>
+
+    <many-to-one
+        name="RequestTicket"                               
+        column="TicketId"                              
+        class="Ticket"                                 
+        cascade="delete"
+        fetch="join"/>
+
+    <property name="ExternalId" length="40" />
+    <property name="Document" length="10240"/>
+
+  </class>
+
+</hibernate-mapping>

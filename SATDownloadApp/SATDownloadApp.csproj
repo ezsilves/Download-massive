@@ -38,7 +38,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Iesi.Collections">
+      <HintPath>..\packages\Iesi.Collections.4.0.0.4000\lib\net40\Iesi.Collections.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NHibernate">
+      <HintPath>..\packages\NHibernate.4.0.4.4000\lib\net40\NHibernate.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -60,10 +66,15 @@
   <ItemGroup>
     <Content Include="default.aspx" />
     <Content Include="JScript.js" />
+    <EmbeddedResource Include="Mapping\Ticket.hbm.xml" />
+    <Content Include="hibernate.cfg.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Mapping\SatXml.hbm.xml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="wsDownload.asmx" />
+    <Content Include="SatDownloadService.asmx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CookieReader.cs" />
@@ -75,13 +86,20 @@
       <DependentUpon>default.aspx</DependentUpon>
     </Compile>
     <Compile Include="IEBrowser.cs" />
+    <Compile Include="Model\SatXml.cs" />
+    <Compile Include="Model\Ticket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="wsDownload.asmx.cs">
-      <DependentUpon>wsDownload.asmx</DependentUpon>
+    <Compile Include="Repository\SatDownloadRepository.cs" />
+    <Compile Include="SatDownloadService.asmx.cs">
+      <DependentUpon>SatDownloadService.asmx</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Service\DownloadResponse.cs" />
+    <Compile Include="Service\ServiceResponse.cs" />
+    <Compile Include="Service\TicketResponse.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -89,6 +107,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

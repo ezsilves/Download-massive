@@ -9,6 +9,8 @@ using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using System.Text.RegularExpressions;
+using SATDownloadApp.Model;
+using SATDownloadApp.Repository;
 
 namespace SATDownloadApp
 {
@@ -34,7 +36,7 @@ namespace SATDownloadApp
             string result = null;
 
             var url = string.Format("https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0&Ecom_User_ID={0}&Ecom_Password={1}", "AABS741012IH5", "Mexico86");
-            
+
             browser = new IEBrowser(url, resultEvent);
 
             //TODO: Esto me tiene que devolver un Awaitable!
@@ -53,9 +55,50 @@ namespace SATDownloadApp
             EventWaitHandle.WaitAll(new AutoResetEvent[] { resultEvent });
 
             result = browser.HtmlResult;
-            
+
             browser.Dispose();
 
+        }
+
+        protected void Button2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var session = SatDownloadRepository.Instance.OpenSession())
+                {
+                    using (var tx = session.BeginTransaction())
+                    {
+                        var t = new Ticket()
+                        {
+                            RequestDate = DateTime.Today,
+                            Username = "User",
+                            Password = "Password",
+                        };
+                        session.Save(t);
+
+                        tx.Commit();
+                    }
+                }
+                Label1.Text = "Database Ok";
+            }
+            catch (Exception ex)
+            {
+                Label1.Text = "Database NOk: " + ex.Message;
+            }
+        }
+
+        protected void Button3_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SatDownloadRepository.Instance.BuildSchema();
+                Label1.Text = "Build Schema Ok";
+            }
+            catch (Exception ex)
+            {
+                Label1.Text = "Build Schema NOk: " + ex.Message;
+            }
+            
         }
 
 
