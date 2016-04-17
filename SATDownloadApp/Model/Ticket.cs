@@ -14,6 +14,7 @@ namespace SATDownloadApp.Model
         public const string StatusProcessing = "processing";
         public const string StatusCompeted = "completed";
         public const string StatusError = "error";
+        public const string StatusDownloading = "downloading";
 
         public Ticket()
         {
@@ -79,5 +80,7 @@ namespace SATDownloadApp.Model
         {
             return this.Status == StatusCompeted;
         }
+
+        
     }
 }

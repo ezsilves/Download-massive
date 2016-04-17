@@ -86,6 +86,7 @@ namespace SATDownloadApp
                 delegate
                 {
                     Init(url);
+                    
                     System.Windows.Forms.Application.Run(this);
                 }));
             // set thread to STA state before starting

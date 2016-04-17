@@ -24,6 +24,8 @@ namespace SATDownloadApp.Model
         public virtual string ExternalId { get; set; }
 
         public virtual string Document { get; set; }
-        
+
+
+        public virtual string FileAddress { get; set; }
     }
 }

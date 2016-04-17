@@ -58,7 +58,7 @@ namespace SATDownloadApp.Repository
             {
                 using (var tx = s.BeginTransaction())
                 {
-                    s.Save(o);
+                    s.SaveOrUpdate(o);
 
                     tx.Commit();
                 }
