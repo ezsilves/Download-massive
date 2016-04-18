@@ -76,28 +76,10 @@ namespace SATDownloadApp.Util
 
                 this.ieBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
                 this.form.Controls.Add(ieBrowser);
-                this.form.Visible = true;
-                this.form.WindowState = FormWindowState.Maximized;
-
-                //var t = new Thread(() =>
-                //    {
-                //        while (!completed)
-                //        {
-                //            Application.DoEvents();
-                //            lock (ieBrowser)
-                //            {
-                //                Monitor.Pulse(ieBrowser);
-                //            }
-                //            Thread.Sleep(100);
-                //        }
-                //    });
-                //t.IsBackground = true;
-                //t.Name = "AppDoEventThread";
-                //t.Start();
+                this.form.Visible = false;
 
                 System.Windows.Forms.Application.Run(this);
 
-                //t.Abort();
             }
             catch (ThreadAbortException)
             {
@@ -142,18 +124,24 @@ namespace SATDownloadApp.Util
                 return;
             }
 
+            this.ieBrowser.DocumentCompleted -= IEBrowser_DownloadPage_DocumentCompleted;
+
             lock (ticket)
             {
                 bool ok = true;
 
                 for (DateTime i = ticket.DowndloadDateFrom; i <= ticket.DowndloadDateTo; i = i.AddDays(1))
                 {
+
                     this.GetReceivedDocuments(i);
                     if (ticket.Status == Ticket.StatusError)
                     {
                         ok = false;
                         break;
                     }
+
+                    //this.ieBrowser.Refresh();
+                    //Application.DoEvents();
                 }
 
                 var cookie = CookieReader.GetCookie(this.ieBrowser.Url.ToString());
@@ -165,20 +153,27 @@ namespace SATDownloadApp.Util
                     ticket.Status = Ticket.StatusDownloading;
                     ticket.TotalFilesToDownload = FilesToDownload.Count;
                     Repository.SatDownloadRepository.Instance.Save(ticket);
-
-                    foreach (var ftd in FilesToDownload)
+                    using (var s = Repository.SatDownloadRepository.Instance.OpenSession())
                     {
-                        try
+                        using (var tx = s.BeginTransaction())
                         {
-                            ftd.Document = DownloadFile(ftd.FileAddress, cookie);
-                            Repository.SatDownloadRepository.Instance.Save(ftd);
-                            ticket.TotalDownloadedFiles++;
-                        }
-                        catch (Exception ex)
-                        {
-                            ok = false;
-                            ticket.Status = Ticket.StatusError;
-                            ticket.Reason = ex.Message;
+                            foreach (var ftd in FilesToDownload)
+                            {
+
+                                try
+                                {
+                                    ftd.Document = DownloadFile(ftd.FileAddress, cookie);
+                                    s.Save(ftd);
+                                    ticket.TotalDownloadedFiles++;
+                                }
+                                catch (Exception ex)
+                                {
+                                    ok = false;
+                                    ticket.Status = Ticket.StatusError;
+                                    ticket.Reason = ex.Message;
+                                }
+                            }
+                            tx.Commit();
                         }
                     }
                 }
@@ -189,8 +184,6 @@ namespace SATDownloadApp.Util
                 }
 
                 Repository.SatDownloadRepository.Instance.Save(ticket);
-
-                this.ieBrowser.DocumentCompleted -= IEBrowser_DownloadPage_DocumentCompleted;
 
                 this.ieBrowser.DocumentCompleted += IEBrowser_Completed_DocumentCompleted;
                 this.ieBrowser.Navigate(new Uri(Logout));
@@ -242,27 +235,39 @@ namespace SATDownloadApp.Util
                     DdlMes.SetAttribute("value", date.Month.ToString("0"));
                 }
 
-                HtmlElement DdlDia = this.ieBrowser.Document.GetElementById("ctl00_MainContent_CldFecha_DdlDia");
-                if (DdlDia != null)
+                do
                 {
-                    DdlDia.SetAttribute("value", date.Day.ToString("0"));
+
+                    Application.DoEvents();
+                    Thread.Sleep(1000);
+                    Application.DoEvents();
+
+                    //TODO: No esta reconociendo el día
+                    HtmlElement DdlDia = this.ieBrowser.Document.GetElementById("ctl00_MainContent_CldFecha_DdlDia");
+                    if (DdlDia != null)
+                    {
+                        DdlDia.SetAttribute("value", date.Day.ToString("00"));
+                    }
+
+
+                    HtmlElement BtnBusqueda = this.ieBrowser.Document.GetElementById("ctl00_MainContent_BtnBusqueda");
+                    if (BtnBusqueda != null)
+                    {
+                        BtnBusqueda.InvokeMember("click");
+                    }
+
+                    WaitProgress();
+
+                    if (this.ieBrowser.Document.GetElementById("ctl00_MainContent_PnlLimiteRegistros") != null)
+                    {
+                        throw new Exception("Download Limit Reached, use lower time range to download");
+                    }
+
                 }
-
-                HtmlElement BtnBusqueda = this.ieBrowser.Document.GetElementById("ctl00_MainContent_BtnBusqueda");
-                if (BtnBusqueda != null)
-                {
-                    BtnBusqueda.InvokeMember("click");
-                }
-
-                WaitProgress();
-
-                if (this.ieBrowser.Document.GetElementById("ctl00_MainContent_PnlLimiteRegistros") != null)
-                {
-                    throw new Exception("Download Limit Reached, use lower time range to download");
-                }
-
+                while (!IsPageForDate(date));
                 //while (true)
                 //    Application.DoEvents();
+                //ctl00_MainContent_PnlNoResultados
                 this.ProcessResult();
 
             }
@@ -271,6 +276,34 @@ namespace SATDownloadApp.Util
                 ticket.Status = Ticket.StatusError;
                 ticket.Reason = ex.Message;
             }
+        }
+
+        private bool IsPageForDate(DateTime date)
+        {
+            var htmlElement = this.ieBrowser.Document.GetElementById("DdlAnio");
+            if (htmlElement == null)
+                return false;
+
+            var year = htmlElement.NextSibling.Children[1].InnerText;
+
+            bool flag = year == date.Year.ToString();
+
+            htmlElement = this.ieBrowser.Document.GetElementById("ctl00_MainContent_CldFecha_DdlMes");
+
+            var month = htmlElement.NextSibling.Children[1].InnerText;
+
+            flag = flag && htmlElement != null &&
+                   month == date.Month.ToString("00");
+
+
+            htmlElement = this.ieBrowser.Document.GetElementById("ctl00_MainContent_CldFecha_DdlDia");
+
+            var day = htmlElement.NextSibling.Children[1].InnerText;
+
+            flag = flag && htmlElement != null &&
+                    day == date.Day.ToString("00");
+
+            return flag;
         }
 
         private void WaitProgress()
@@ -282,7 +315,9 @@ namespace SATDownloadApp.Util
             do
             {
                 flag = true;
+                Thread.Sleep(100);
                 Application.DoEvents();
+                Thread.Sleep(10);
                 HtmlElement htmlElement2 = this.ieBrowser.Document.GetElementById("ctl00_MainContent_UpdateProgress1");
 
                 if (htmlElement2 != null)
@@ -295,7 +330,7 @@ namespace SATDownloadApp.Util
 
                 if (sw.Elapsed > limit)
                 {
-                    throw new TimeoutException(string.Format("Timeout {0} waiting progress windows to close, try again in a few minutes",limit));
+                    throw new TimeoutException(string.Format("Timeout {0} waiting progress windows to close, try again in a few minutes", limit));
                 }
 
             }
@@ -307,7 +342,7 @@ namespace SATDownloadApp.Util
 
         private void ProcessResult()
         {
-            
+
 
             try
             {
@@ -370,7 +405,7 @@ namespace SATDownloadApp.Util
 
                 WebClient webClient = new WebClient();
                 webClient.Headers.Add(HttpRequestHeader.Cookie, cookie);
-                var file =  webClient.DownloadData(address);
+                var file = webClient.DownloadData(address);
 
                 return System.Text.UTF8Encoding.UTF8.GetString(file);
             }
@@ -402,7 +437,7 @@ namespace SATDownloadApp.Util
             }
             catch (Exception)
             {
-                
+
                 throw;
             }
 

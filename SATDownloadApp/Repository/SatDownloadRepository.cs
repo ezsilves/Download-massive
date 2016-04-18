@@ -52,7 +52,7 @@ namespace SATDownloadApp.Repository
             se.Execute(false, true, false);
         }
 
-        public void Save(object o)
+        public void Save(Ticket o)
         {
             using (var s = this.OpenSession())
             {
@@ -63,6 +63,12 @@ namespace SATDownloadApp.Repository
                     tx.Commit();
                 }
             }
+        }
+
+
+        public void Save(SatXml xml, ISession s) 
+        {
+            s.Save(xml);
         }
 
         public List<SatXml> GetXmls(Ticket t)
