@@ -9,6 +9,14 @@ namespace SATDownloadApp.Model
     public class Ticket
     {
 
+        public static Ticket Empty = new Ticket()
+        {
+            Id = Guid.Empty,
+            Status = StatusEmpty,
+            Reason = "None"
+        };
+
+        public const string StatusEmpty = "empty";
         public const string StatusPending = "pending";
         public const string StatusCancelled = "cancelled";
         public const string StatusProcessing = "processing";
@@ -81,6 +89,12 @@ namespace SATDownloadApp.Model
             return this.Status == StatusCompeted;
         }
 
+        public override string ToString()
+        {
+            if(Guid.Empty == this.Id)
+ 	         return "No Ticket";
+            return this.Id.ToString();
+        }
         
     }
 }

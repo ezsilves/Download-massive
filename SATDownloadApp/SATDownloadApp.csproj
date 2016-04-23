@@ -85,7 +85,9 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="default.aspx" />
+    <Content Include="Default.htm" />
+    <EmbeddedResource Include="Mapping\Log.hbm.xml" />
+    <Content Include="Setup.aspx" />
     <Content Include="JScript.js" />
     <EmbeddedResource Include="Mapping\Ticket.hbm.xml" />
     <Content Include="hibernate.cfg.xml">
@@ -99,12 +101,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CookieReader.cs" />
-    <Compile Include="default.aspx.cs">
-      <DependentUpon>default.aspx</DependentUpon>
+    <Compile Include="CustomAuthorizationFilter.cs" />
+    <Compile Include="Model\Log.cs" />
+    <Compile Include="Setup.aspx.cs">
+      <DependentUpon>Setup.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="default.aspx.designer.cs">
-      <DependentUpon>default.aspx</DependentUpon>
+    <Compile Include="Setup.aspx.designer.cs">
+      <DependentUpon>Setup.aspx</DependentUpon>
     </Compile>
     <Compile Include="IEBrowser.cs" />
     <Compile Include="Model\SatXml.cs" />
@@ -122,7 +126,10 @@
     <Compile Include="Util\SatDownloader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <None Include="Properties\PublishProfiles\SatDownload.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

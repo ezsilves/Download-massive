@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="SatDownloadService" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:s1="http://microsoft.com/wsdl/types/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="SatDownloadService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="SatDownloadService">
+      <s:import namespace="http://microsoft.com/wsdl/types/" />
+      <s:element name="DownloadRequest">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="from" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="to" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DownloadRequestResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="DownloadRequestResult" type="tns:TicketResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="TicketResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:ServiceResponse">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Ticket" type="tns:Ticket" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ServiceResponse" abstract="true">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="ResponseStatus" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ResponseMessage" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="StackTrace" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Ticket">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="Id" type="s1:guid" />
+          <s:element minOccurs="1" maxOccurs="1" name="RequestDate" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="Username" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="DowndloadDateFrom" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="DowndloadDateTo" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="Status" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Reason" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="TotalFilesToDownload" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="TotalDownloadedFiles" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetTicketStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="guid" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTicketStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetTicketStatusResult" type="tns:TicketResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDownloadInfo">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="guid" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDownloadInfoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDownloadInfoResult" type="tns:DownloadResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="DownloadResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:ServiceResponse">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Ticket" type="tns:Ticket" />
+              <s:element minOccurs="0" maxOccurs="1" name="Files" type="tns:ArrayOfSatXml" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfSatXml">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="SatXml" nillable="true" type="tns:SatXml" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="SatXml">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="ExternalId" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Document" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FileAddress" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="TicketResponse" nillable="true" type="tns:TicketResponse" />
+      <s:element name="DownloadResponse" nillable="true" type="tns:DownloadResponse" />
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
+      <s:simpleType name="guid">
+        <s:restriction base="s:string">
+          <s:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+        </s:restriction>
+      </s:simpleType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="DownloadRequestSoapIn">
+    <wsdl:part name="parameters" element="tns:DownloadRequest" />
+  </wsdl:message>
+  <wsdl:message name="DownloadRequestSoapOut">
+    <wsdl:part name="parameters" element="tns:DownloadRequestResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTicketStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:GetTicketStatus" />
+  </wsdl:message>
+  <wsdl:message name="GetTicketStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:GetTicketStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDownloadInfoSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDownloadInfo" />
+  </wsdl:message>
+  <wsdl:message name="GetDownloadInfoSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDownloadInfoResponse" />
+  </wsdl:message>
+  <wsdl:message name="DownloadRequestHttpGetIn">
+    <wsdl:part name="username" type="s:string" />
+    <wsdl:part name="password" type="s:string" />
+    <wsdl:part name="from" type="s:string" />
+    <wsdl:part name="to" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="DownloadRequestHttpGetOut">
+    <wsdl:part name="Body" element="tns:TicketResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTicketStatusHttpGetIn">
+    <wsdl:part name="guid" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTicketStatusHttpGetOut">
+    <wsdl:part name="Body" element="tns:TicketResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDownloadInfoHttpGetIn">
+    <wsdl:part name="guid" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetDownloadInfoHttpGetOut">
+    <wsdl:part name="Body" element="tns:DownloadResponse" />
+  </wsdl:message>
+  <wsdl:portType name="SatDownloadServiceSoap">
+    <wsdl:operation name="DownloadRequest">
+      <wsdl:input message="tns:DownloadRequestSoapIn" />
+      <wsdl:output message="tns:DownloadRequestSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTicketStatus">
+      <wsdl:input message="tns:GetTicketStatusSoapIn" />
+      <wsdl:output message="tns:GetTicketStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDownloadInfo">
+      <wsdl:input message="tns:GetDownloadInfoSoapIn" />
+      <wsdl:output message="tns:GetDownloadInfoSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="SatDownloadServiceHttpGet">
+    <wsdl:operation name="DownloadRequest">
+      <wsdl:input message="tns:DownloadRequestHttpGetIn" />
+      <wsdl:output message="tns:DownloadRequestHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTicketStatus">
+      <wsdl:input message="tns:GetTicketStatusHttpGetIn" />
+      <wsdl:output message="tns:GetTicketStatusHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDownloadInfo">
+      <wsdl:input message="tns:GetDownloadInfoHttpGetIn" />
+      <wsdl:output message="tns:GetDownloadInfoHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SatDownloadServiceSoap" type="tns:SatDownloadServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="DownloadRequest">
+      <soap:operation soapAction="SatDownloadService/DownloadRequest" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTicketStatus">
+      <soap:operation soapAction="SatDownloadService/GetTicketStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDownloadInfo">
+      <soap:operation soapAction="SatDownloadService/GetDownloadInfo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="SatDownloadServiceSoap12" type="tns:SatDownloadServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="DownloadRequest">
+      <soap12:operation soapAction="SatDownloadService/DownloadRequest" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTicketStatus">
+      <soap12:operation soapAction="SatDownloadService/GetTicketStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDownloadInfo">
+      <soap12:operation soapAction="SatDownloadService/GetDownloadInfo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="SatDownloadServiceHttpGet" type="tns:SatDownloadServiceHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="DownloadRequest">
+      <http:operation location="/DownloadRequest" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTicketStatus">
+      <http:operation location="/GetTicketStatus" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDownloadInfo">
+      <http:operation location="/GetDownloadInfo" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SatDownloadService">
+    <wsdl:port name="SatDownloadServiceSoap" binding="tns:SatDownloadServiceSoap">
+      <soap:address location="http://serviciocontamatico.com.azhar.arvixe.com/SatDownloadService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="SatDownloadServiceSoap12" binding="tns:SatDownloadServiceSoap12">
+      <soap12:address location="http://serviciocontamatico.com.azhar.arvixe.com/SatDownloadService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="SatDownloadServiceHttpGet" binding="tns:SatDownloadServiceHttpGet">
+      <http:address location="http://serviciocontamatico.com.azhar.arvixe.com/SatDownloadService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

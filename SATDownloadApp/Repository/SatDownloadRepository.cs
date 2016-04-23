@@ -92,5 +92,37 @@ namespace SATDownloadApp.Repository
                 return session.Get<Ticket>(guid);
             }
         }
+
+        public void Log(Log.LogLevel type, string msg, params object[] args)
+        {
+            var logLine = new Log(type, msg, args);
+            logLine.Level = type;
+            Log(logLine);
+        }
+
+        public void Log(Ticket ticket, Log.LogLevel type, string msg, params object[] args)
+        {
+            var logLine = new Log(type, msg, args);
+            logLine.TicketId = ticket.Id.ToString();
+            Log(logLine);
+        }
+
+        private void Log(Log logLine)
+        {
+            try
+            {
+                using (var s = this.OpenSession())
+                {
+                    using (var tx = s.BeginTransaction(System.Data.IsolationLevel.ReadUncommitted))
+                    {
+                        s.Save(logLine);
+                        tx.Commit();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
     }
 }

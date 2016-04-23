@@ -19,7 +19,7 @@ namespace SATDownloadApp.Util
 
         public const string AuthUrl1 = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0&Ecom_User_ID={0}&Ecom_Password={1}";
 
-        public const string AuthUrl2 = "https://cfdiau.sat.gob.mx/nidp/app?sid=0";
+        public const string AuthUrl2 = "https://cfdiau.sat.gob.mx/nidp/jsp/content.jsp";
 
         public const string DownloadPage = "https://portalcfdi.facturaelectronica.sat.gob.mx/ConsultaReceptor.aspx";
 
@@ -39,7 +39,7 @@ namespace SATDownloadApp.Util
 
         private bool completed = false;
 
-        System.Windows.Forms.Form form;
+        //System.Windows.Forms.Form form;
 
         public SatDownloader(Ticket ticket)
         {
@@ -55,7 +55,7 @@ namespace SATDownloadApp.Util
             thread = new Thread(RunThread);
             thread.SetApartmentState(ApartmentState.STA);
             thread.Name = "Worker Ticket: " + ticket.Id;
-            this.form = new System.Windows.Forms.Form();
+            //this.form = new System.Windows.Forms.Form();
 
         }
 
@@ -69,20 +69,26 @@ namespace SATDownloadApp.Util
         {
             try
             {
+                Repository.SatDownloadRepository.Instance.Log(this.ticket,Log.LogLevel.TRACE, "RunThread - load browser");
+
                 ieBrowser = new WebBrowser();
                 ieBrowser.DocumentCompleted += new WebBrowserDocumentCompletedEventHandler(IEBrowser_AuthUrl1_DocumentCompleted);
                 var url = string.Format(AuthUrl1, this.Username, this.Password);
                 ieBrowser.Navigate(url);
 
-                this.ieBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-                this.form.Controls.Add(ieBrowser);
-                this.form.Visible = false;
+                Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.TRACE, "RunThread - browser navigate");
 
                 System.Windows.Forms.Application.Run(this);
 
             }
             catch (ThreadAbortException)
             {
+            }
+            catch (Exception ex)
+            {
+                ticket.Status = Ticket.StatusError;
+                ticket.Reason = string.Format("RunThread  - {0} \r\n {1}", ex.Message, ex.StackTrace);
+                Repository.SatDownloadRepository.Instance.Save(ticket);
             }
 
         }
@@ -92,34 +98,84 @@ namespace SATDownloadApp.Util
             if (this.ieBrowser.Document == null)
                 return;
 
-
-            if (this.ieBrowser.Document.Body.InnerHtml.Contains("Clave CIEC incorrecta"))
-            {
-                lock (ticket)
-                {
-                    ticket.Status = Ticket.StatusError;
-                    ticket.Reason = "Clave CIEC incorrecta";
-
-                    Repository.SatDownloadRepository.Instance.Save(ticket);
-
-                    this.completed = true;
-                    return;
-                }
-            }
+            Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.TRACE, "Auth 1 - Ok");
 
             //TODO OK?
             ieBrowser.DocumentCompleted -= IEBrowser_AuthUrl1_DocumentCompleted;
 
+            ieBrowser.DocumentCompleted += IEBrowser_AuthUrl2_DocumentCompleted;
+            this.ieBrowser.Navigate(AuthUrl2);
+            Application.DoEvents();
+        }
+
+        private int tryAuth2Url = 0;
+
+        private void IEBrowser_AuthUrl2_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        {
+
+            if (this.ieBrowser.Url.ToString() != AuthUrl2)
+            {
+                Application.DoEvents();
+                tryAuth2Url++;
+                if (tryAuth2Url >= 10)
+                {
+                    Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.WARN, "Can't Access Auth 2: \r\nCurrent Url: {0}\r\nContent:\r\n{1}", this.ieBrowser.Url, this.ieBrowser.Document.Body.InnerHtml);
+
+                    End();
+                    return;
+                }
+                this.ieBrowser.Navigate(AuthUrl2);
+                return;
+            }
+
+            var str1 = "Your session has been authenticated";
+            var str2 = "Se ha autenticado su sesión";
+
+            if (!this.ieBrowser.Document.Body.InnerHtml.Contains(str1) &&  
+                !this.ieBrowser.Document.Body.InnerHtml.Contains(str2))
+            {
+                lock (ticket)
+                {
+
+                    Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.TRACE, "Auth - failed");
+
+                    Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.DBG, "Url: {0} \r\n Auth Response: {1}", this.ieBrowser.Url, this.ieBrowser.Document.Body.InnerHtml);
+
+                    ticket.Status = Ticket.StatusError;
+                    ticket.Reason = "Incorrect user or password";
+
+                    Repository.SatDownloadRepository.Instance.Save(ticket);
+
+                    End();
+                    return;
+                }
+            }
+
+            Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.TRACE, "Auth 2 - Ok");
+
+            ieBrowser.DocumentCompleted -= IEBrowser_AuthUrl2_DocumentCompleted;
+
             ieBrowser.DocumentCompleted += IEBrowser_DownloadPage_DocumentCompleted;
             this.ieBrowser.Navigate(DownloadPage);
-
+            Application.DoEvents();
         }
+
+
+        private int tryDownloadPage = 0;
 
         private void IEBrowser_DownloadPage_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
             if (this.ieBrowser.Url.ToString() != DownloadPage)
             {
                 Application.DoEvents();
+                tryDownloadPage++;
+                if (tryDownloadPage >= 10)
+                {
+                    Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.WARN, "Can't Access Download: \r\nCurrent Url: {0}\r\nContent:\r\n{1}", this.ieBrowser.Url, this.ieBrowser.Document.Body.InnerHtml);
+
+                    End();
+                    return;
+                }
                 this.ieBrowser.Navigate(DownloadPage);
                 return;
             }
@@ -130,13 +186,16 @@ namespace SATDownloadApp.Util
             {
                 bool ok = true;
 
+
                 for (DateTime i = ticket.DowndloadDateFrom; i <= ticket.DowndloadDateTo; i = i.AddDays(1))
                 {
+                    Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.TRACE, "Accessing Files for {0:yyyy-MM-dd}", i);
 
                     this.GetReceivedDocuments(i);
                     if (ticket.Status == Ticket.StatusError)
                     {
                         ok = false;
+                        Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.ERR, "Error accessing files: {0}", ticket.Reason);
                         break;
                     }
 
@@ -150,7 +209,10 @@ namespace SATDownloadApp.Util
 
                 if (ok)
                 {
+                    Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.TRACE, "Downloading {0} Files", FilesToDownload.Count);
+
                     ticket.Status = Ticket.StatusDownloading;
+                    ticket.Reason = "Downloading";
                     ticket.TotalFilesToDownload = FilesToDownload.Count;
                     Repository.SatDownloadRepository.Instance.Save(ticket);
                     using (var s = Repository.SatDownloadRepository.Instance.OpenSession())
@@ -178,12 +240,16 @@ namespace SATDownloadApp.Util
                     }
                 }
 
+                ticket.Reason = "";
+
                 if (ok)
                 {
                     ticket.Status = Ticket.StatusCompeted;
+                    ticket.Reason = "Done";
                 }
 
                 Repository.SatDownloadRepository.Instance.Save(ticket);
+                Repository.SatDownloadRepository.Instance.Log(this.ticket, Log.LogLevel.TRACE, "End", FilesToDownload.Count);
 
                 this.ieBrowser.DocumentCompleted += IEBrowser_Completed_DocumentCompleted;
                 this.ieBrowser.Navigate(new Uri(Logout));
@@ -192,6 +258,11 @@ namespace SATDownloadApp.Util
         }
 
         private void IEBrowser_Completed_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        {
+            End();
+        }
+
+        private void End()
         {
             this.completed = true;
             Application.ExitThread();
@@ -237,18 +308,15 @@ namespace SATDownloadApp.Util
 
                 do
                 {
-
                     Application.DoEvents();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                     Application.DoEvents();
 
-                    //TODO: No esta reconociendo el día
                     HtmlElement DdlDia = this.ieBrowser.Document.GetElementById("ctl00_MainContent_CldFecha_DdlDia");
                     if (DdlDia != null)
                     {
                         DdlDia.SetAttribute("value", date.Day.ToString("00"));
                     }
-
 
                     HtmlElement BtnBusqueda = this.ieBrowser.Document.GetElementById("ctl00_MainContent_BtnBusqueda");
                     if (BtnBusqueda != null)
@@ -430,10 +498,10 @@ namespace SATDownloadApp.Util
             {
                 System.Runtime.InteropServices.Marshal.Release(ieBrowser.Handle);
 
-                this.form.Visible = false;
-                this.form.Close();
-                this.form.Controls.Clear();
-                this.form.Dispose();
+                //this.form.Visible = false;
+                //this.form.Close();
+                //this.form.Controls.Clear();
+                //this.form.Dispose();
             }
             catch (Exception)
             {
