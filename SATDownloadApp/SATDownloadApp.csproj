@@ -67,9 +67,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Default.htm" />
-    <Content Include="XMLFile1.xml">
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="Setup.aspx" />
     <Content Include="JScript.js" />
     <Content Include="hibernate.cfg.xml">
