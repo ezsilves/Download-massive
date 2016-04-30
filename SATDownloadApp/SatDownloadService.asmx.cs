@@ -1,8 +1,6 @@
-﻿using Hangfire;
-using SATDownloadApp.Model;
-using SATDownloadApp.Repository;
-using SATDownloadApp.Service;
-using SATDownloadApp.Util;
+﻿using SATDownloadApp.Service;
+using SatDownloadLibrary.Model;
+using SatDownloadLibrary.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -68,7 +66,7 @@ namespace SATDownloadApp
                     SatDownloadRepository.Instance.Save(ticket);
                     ret.ResponseMessage = "Your request will be processed";
 
-                    BackgroundJob.Enqueue(() => ProcesTicket(ticket));
+                    //BackgroundJob.Enqueue(() => ProcesTicket(ticket));
                 }
                 else
                 {
@@ -87,9 +85,9 @@ namespace SATDownloadApp
 
         public void ProcesTicket(Ticket ticket)
         {
-            var downloader = new SatDownloader(ticket);
-            downloader.Init();
-            downloader.Start().Join();
+            //var downloader = new SatDownloader(ticket);
+            //downloader.Init();
+            //downloader.Start().Join();
             
         }
 

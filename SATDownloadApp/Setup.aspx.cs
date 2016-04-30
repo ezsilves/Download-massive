@@ -4,13 +4,12 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Windows.Forms;
-
 using System.Threading;
 using System.IO;
 using System.Text.RegularExpressions;
-using SATDownloadApp.Model;
-using SATDownloadApp.Repository;
+using SatDownloadLibrary.Repositories;
+using SatDownloadLibrary.Model;
+
 
 namespace SATDownloadApp
 {
@@ -20,10 +19,18 @@ namespace SATDownloadApp
     public partial class _default : System.Web.UI.Page
     {
 
-        IEBrowser browser;
-
         protected void Page_Load(object sender, EventArgs e)
         {
+        }
+
+        protected void Button1_Click(object sender, EventArgs ea)
+        {
+
+        }
+
+        private void RunThread(object obj)
+        {
+
         }
 
         protected void Button2_Click(object sender, EventArgs e)
@@ -31,10 +38,10 @@ namespace SATDownloadApp
             try
             {
 
-                Repository.SatDownloadRepository.Instance.Log(Log.LogLevel.TRACE, "Test Connection");
+                SatDownloadRepository.Instance.Log(Log.LogLevel.TRACE, "Test Connection");
                 using (var session = SatDownloadRepository.Instance.OpenSession())
                 {
-                    
+
                     using (var tx = session.BeginTransaction())
                     {
                         var t = new Ticket()
@@ -48,7 +55,7 @@ namespace SATDownloadApp
                         session.Save(t);
 
                         tx.Commit();
-                        Repository.SatDownloadRepository.Instance.Log(t, Log.LogLevel.TRACE, "Test Ticket");
+                        SatDownloadRepository.Instance.Log(t, Log.LogLevel.TRACE, "Test Ticket");
 
                     }
                 }

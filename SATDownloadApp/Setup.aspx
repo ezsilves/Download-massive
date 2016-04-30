@@ -12,6 +12,7 @@
     <div>
         <asp:Button ID="Button2" runat="server" Text="Test Connection" TabIndex="11" OnClick="Button2_Click" />
         <asp:Button ID="Button3" runat="server" Text="Build Schema" TabIndex="11" OnClick="Button3_Click" />
+        <asp:Button ID="Button1" runat="server" Text="Awesomium" OnClick="Button1_Click" />
         <br />
         <asp:Label ID="Label1" runat="server" Text=""></asp:Label>
     </div>
