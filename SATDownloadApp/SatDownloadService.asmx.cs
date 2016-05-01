@@ -1,6 +1,6 @@
-﻿using SATDownloadApp.Model;
-using SATDownloadApp.Repository;
-using SATDownloadApp.Service;
+﻿using SATDownloadApp.Service;
+using SatDownloadLibrary.Model;
+using SatDownloadLibrary.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -65,6 +65,8 @@ namespace SATDownloadApp
                 {
                     SatDownloadRepository.Instance.Save(ticket);
                     ret.ResponseMessage = "Your request will be processed";
+
+                    //BackgroundJob.Enqueue(() => ProcesTicket(ticket));
                 }
                 else
                 {
@@ -79,6 +81,14 @@ namespace SATDownloadApp
                 return new TicketResponse(ex);
             }
 
+        }
+
+        public void ProcesTicket(Ticket ticket)
+        {
+            //var downloader = new SatDownloader(ticket);
+            //downloader.Init();
+            //downloader.Start().Join();
+            
         }
 
         private DateTime Parse(string d)
