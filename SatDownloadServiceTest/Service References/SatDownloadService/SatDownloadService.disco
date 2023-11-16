@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://serviciocontamatico.com.azhar.arvixe.com/SatDownloadService.asmx?wsdl" docRef="http://serviciocontamatico.com.azhar.arvixe.com/SatDownloadService.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://serviciocontamatico.com.azhar.arvixe.com/SatDownloadService.asmx" xmlns:q1="SatDownloadService" binding="q1:SatDownloadServiceSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://serviciocontamatico.com.azhar.arvixe.com/SatDownloadService.asmx" xmlns:q2="SatDownloadService" binding="q2:SatDownloadServiceSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

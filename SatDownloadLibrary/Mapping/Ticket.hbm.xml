@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2"
+    namespace="SatDownloadLibrary.Model" assembly="SatDownloadLibrary">
+
+  <class name="Ticket">
+ 
+    <id name="Id">
+      <generator class="guid.comb" />
+    </id>
+
+    <property name="RequestDate"  />
+    <property name="Username" length="20"/>
+    <property name="Password" length="20"/>
+    
+    <property name="DowndloadDateFrom" />
+    <property name="DowndloadDateTo" />
+    <property name="Status" length="20" />
+    <property name="Reason" length="255" />
+    <property name="TotalFilesToDownload" />
+    <property name="TotalDownloadedFiles" />
+   
+
+
+  </class>
+
+</hibernate-mapping>
